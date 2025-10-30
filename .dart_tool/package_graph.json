@@ -40,13 +40,6 @@
       ]
     },
     {
-      "name": "flutter_blue_plus_platform_interface",
-      "version": "7.0.0",
-      "dependencies": [
-        "flutter"
-      ]
-    },
-    {
       "name": "flutter_blue_plus_linux",
       "version": "7.0.3",
       "dependencies": [
@@ -73,6 +66,13 @@
       ]
     },
     {
+      "name": "flutter_blue_plus_platform_interface",
+      "version": "7.0.0",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
       "name": "flutter",
       "version": "0.0.0",
       "dependencies": [
@@ -83,6 +83,11 @@
         "sky_engine",
         "vector_math"
       ]
+    },
+    {
+      "name": "web",
+      "version": "1.1.1",
+      "dependencies": []
     },
     {
       "name": "flutter_web_plugins",
@@ -97,13 +102,25 @@
       ]
     },
     {
-      "name": "vector_math",
-      "version": "2.1.4",
+      "name": "rxdart",
+      "version": "0.28.0",
       "dependencies": []
+    },
+    {
+      "name": "bluez",
+      "version": "0.8.3",
+      "dependencies": [
+        "dbus"
+      ]
     },
     {
       "name": "sky_engine",
       "version": "0.0.0",
+      "dependencies": []
+    },
+    {
+      "name": "vector_math",
+      "version": "2.1.4",
       "dependencies": []
     },
     {
@@ -124,18 +141,6 @@
       "dependencies": []
     },
     {
-      "name": "web",
-      "version": "1.1.1",
-      "dependencies": []
-    },
-    {
-      "name": "bluez",
-      "version": "0.8.3",
-      "dependencies": [
-        "dbus"
-      ]
-    },
-    {
       "name": "dbus",
       "version": "0.7.11",
       "dependencies": [
@@ -144,11 +149,6 @@
         "meta",
         "xml"
       ]
-    },
-    {
-      "name": "ffi",
-      "version": "2.1.4",
-      "dependencies": []
     },
     {
       "name": "xml",
@@ -160,22 +160,22 @@
       ]
     },
     {
-      "name": "petitparser",
-      "version": "7.0.1",
-      "dependencies": [
-        "collection",
-        "meta"
-      ]
-    },
-    {
-      "name": "rxdart",
-      "version": "0.28.0",
+      "name": "ffi",
+      "version": "2.1.4",
       "dependencies": []
     },
     {
       "name": "args",
       "version": "2.7.0",
       "dependencies": []
+    },
+    {
+      "name": "petitparser",
+      "version": "7.0.1",
+      "dependencies": [
+        "collection",
+        "meta"
+      ]
     }
   ],
   "configVersion": 1
