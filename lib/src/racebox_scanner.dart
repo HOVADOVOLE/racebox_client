@@ -19,7 +19,11 @@ class RaceBoxScanner {
       return Stream.error(e);
     }
 
-    return FlutterBluePlus.scanResults;
+    return FlutterBluePlus.scanResults.map((results) {
+      return results
+          .where((r) => r.device.platformName.toLowerCase().contains('racebox'))
+          .toList();
+    });
   }
 
   /// Stops the scan.
