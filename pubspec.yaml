@@ -1,6 +1,6 @@
 name: racebox_client
 description: A Dart library for connecting to and communicating with RaceBox devices.
-version: 1.0.2
+version: 1.0.3
 publish_to: "none"
 
 environment:
