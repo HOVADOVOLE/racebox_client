@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:typed_data'; // Added for Uint8List
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'dart:io';
+import 'models/ubx_message.dart'; // Added for UbxMessage
+import 'racebox_protocol.dart'; // Added for RaceBoxProtocol
 
 /// Handles the connection to a single RaceBox device.
 class RaceBoxConnection {
@@ -8,11 +11,15 @@ class RaceBoxConnection {
 
   BluetoothCharacteristic? _txCharacteristic;
   StreamSubscription<List<int>>? _notificationSubscription;
-  StreamController<List<int>> _dataStreamController =
+  final StreamController<UbxMessage> _dataStreamController =
       StreamController.broadcast();
 
+  // Buffer pro příchozí byte stream, aby se mohly správně parsovat UBX zprávy.
+  // Zprávy mohou přijít fragmentované nebo naopak v jednom balíku s více zprávami.
+  final List<int> _buffer = [];
+
   /// The stream of data from the RaceBox device.
-  Stream<List<int>> get dataStream => _dataStreamController.stream;
+  Stream<UbxMessage> get dataStream => _dataStreamController.stream;
   Stream<BluetoothConnectionState> get connectionState =>
       device.connectionState;
 
@@ -44,7 +51,8 @@ class RaceBoxConnection {
               await _txCharacteristic!.setNotifyValue(true);
               _notificationSubscription =
                   _txCharacteristic!.lastValueStream.listen((value) {
-                _dataStreamController.add(value);
+                _buffer.addAll(value);
+                _processBuffer();
               });
               return true;
             }
@@ -55,6 +63,47 @@ class RaceBoxConnection {
     } catch (e) {
       print('Error connecting to RaceBox: $e');
       return false;
+    }
+  }
+
+  /// Processes the internal buffer to extract and emit full UBX messages.
+  /// Handles fragmented or batched data by continually trying to parse messages
+  /// as long as enough data is available in the buffer.
+  void _processBuffer() {
+    while (_buffer.length >= 8) {
+      // UBX messages start with 0xB5 0x62
+      if (_buffer[0] != 0xB5 || _buffer[1] != 0x62) {
+        // If not at the start of a message, discard the first byte and try again
+        _buffer.removeAt(0);
+        continue;
+      }
+
+      // Check if we have enough bytes to determine the payload length
+      if (_buffer.length < 6) {
+        // Need at least 6 bytes for header + payload length (cls, id, len_lsb, len_msb)
+        break;
+      }
+
+      // Payload length is at index 4 (LSB) and 5 (MSB)
+      final int payloadLen = (_buffer[5] << 8) | _buffer[4];
+      final int totalMessageLen = payloadLen + 8; // Header (6) + Payload (len) + Checksum (2)
+
+      // Check if the entire message is in the buffer
+      if (_buffer.length < totalMessageLen) {
+        break; // Not enough data for the full message, wait for more
+      }
+
+      // Extract the full message packet
+      final Uint8List packet = Uint8List.fromList(_buffer.sublist(0, totalMessageLen));
+      
+      // Remove the processed message from the buffer
+      _buffer.removeRange(0, totalMessageLen);
+
+      // Attempt to decode the message
+      final UbxMessage? message = RaceBoxProtocol().decode(packet);
+      if (message != null) {
+        _dataStreamController.add(message);
+      }
     }
   }
 
@@ -69,6 +118,8 @@ class RaceBoxConnection {
     } catch (e) {
       print('Error disconnecting from RaceBox: $e');
     }
-    _dataStreamController.close();
+    // Do NOT close _dataStreamController here, it's a broadcast stream
+    // and might be listened to by multiple components. It should be closed
+    // by RaceBoxManager when it's disposed.
   }
 }

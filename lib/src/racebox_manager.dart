@@ -1,10 +1,8 @@
 
 import 'dart:async';
-import 'dart:typed_data';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'racebox_scanner.dart';
 import 'racebox_connection.dart';
-import 'racebox_protocol.dart';
 import 'models/ubx_message.dart';
 import 'racebox_device.dart';
 
@@ -19,7 +17,6 @@ class RaceBoxManager {
   RaceBoxManager._internal();
 
   final RaceBoxScanner _scanner = RaceBoxScanner();
-  final RaceBoxProtocol _protocol = RaceBoxProtocol();
   RaceBoxConnection? _connection;
 
   RaceBoxConnection? get activeConnection => _connection;
@@ -50,11 +47,9 @@ class RaceBoxManager {
       _connection!.connectionState.listen((state) {
         _connectionStateController.add(state);
       });
-      _connection!.dataStream.listen((data) {
-        final message = _protocol.decode(Uint8List.fromList(data));
-        if (message != null) {
-          _messageController.add(message);
-        }
+      // The RaceBoxConnection already decodes and adds UbxMessage to its dataStream
+      _connection!.dataStream.listen((message) {
+        _messageController.add(message);
       });
     }
     return success;
